@@ -1,0 +1,10 @@
+declare module "firebase-tools/lib/command.js";
+declare module "firebase-tools/lib/ensureApiEnabled.js";
+declare module "firebase-tools/lib/functionsConfig.js";
+declare module "firebase-tools/lib/deploy/lifecycleHooks.js";
+declare module "firebase-tools/lib/functions/env.js";
+declare module "firebase-tools/lib/deploy/functions/checkIam.js";
+declare module "firebase-tools/lib/requirePermissions.js";
+declare module "firebase-tools/lib/deploy/functions/runtimes/index.js";
+declare module "firebase-tools/lib/deploy/functions/prepareFunctionsUpload.js";
+declare module "firebase-tools/lib/projectUtils.js";
