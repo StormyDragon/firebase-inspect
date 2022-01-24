@@ -1,7 +1,15 @@
 {
   "name": "@stormweyr/firebase-inspect",
-  "version": "1.0.1",
-  "description": "Command line tool to extract project information from a firebase project.",
+  "version": "1.0.4",
+  "description": "Command line tool to extract project trigger information from a firebase project.",
+  "keywords": [
+      "firebase",
+      "google cloud",
+      "firebase functions",
+      "google cloud functions",
+      "cloud run",
+      "terraform"
+  ],
   "license": "ISC",
   "type": "module",
   "author": "StormyDragon <stormy-npm@stormweyr.dk>",
@@ -17,7 +25,7 @@
     "typescript": "^4.5.5"
   },
   "engines": {
-    "node": "17"
+    "node": ">=16"
   },
   "scripts": {
     "build": "tsc",
