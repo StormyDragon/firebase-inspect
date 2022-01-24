@@ -4,10 +4,10 @@ Firebase Inspector
 Accepts JSON on stdin with the keys:
 * firebase_config: path to the projects firebase.json.
 * alias: name of the alias which to render configuration for.
-* formatting: flat-json for terraform compatible output or json(default) for anything else.
+* formatting: `flat-json` for terraform compatible output or `json`(default) for just a plain JSON output
 
 Outputs a JSON structure
-* projectId: name of the project
+* projectId: name of the project pointed to by alias.
 * sourceDir: function source files
 * projectDir: root project (where the firebase.json file resides)
 * ignore: list of nodes to ignore when packaging the source.
