@@ -23,7 +23,7 @@ data "external" "firebase-function-data" {
   query = {
     firebase_config = "./firebase.json"
     alias           = "default"
-    format          = "json-flat"
+    formatting      = "flat-json"
   }
 }
 
@@ -72,13 +72,18 @@ resource "google_cloudfunctions_function" "firebase-functions" {
   description = "My function"
   runtime     = each.value.runtime
 
-  available_memory_mb = each.value.availableMemoryMb
+  available_memory_mb = lookup(each.value, "availableMemoryMb", 128)
   trigger_http        = contains(keys(each.value), "httpsTrigger") ? true : null
-  timeout             = lookup(each.value, "timeout", 60)
+  timeout             = parseint(trim(lookup(each.value, "timeout", "60"), "s"), 10)
   entry_point         = each.value.entryPoint
+
+  max_instances = lookup(each.value, "maxInstances", null)
+  min_instances = lookup(each.value, "minInstances", null)
 
   source_archive_bucket = google_storage_bucket_object.zip.bucket
   source_archive_object = google_storage_bucket_object.zip.name
+
+  labels = lookup(each.value, "labels", null)
 
   dynamic "event_trigger" {
     for_each = (contains(keys(each.value), "eventTrigger") ? { "" : each.value.eventTrigger } : {})
