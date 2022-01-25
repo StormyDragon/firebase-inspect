@@ -45,8 +45,11 @@ data "archive_file" "prepared-source" {
 }
 
 resource "null_resource" "prepared-source-add-runtime" {
+  triggers = {
+    archive_created = data.archive_file.prepared-source.output_path
+  }
   provisioner "local-exec" {
-    command = "mkfifo .runtimeconfig.json; echo ${data.external.firebase-function-data.result.runtimeConfig} > .runtimeconfig.json | zip -FI ${data.archive_file.prepared-source.output_path} .runtimeconfig.json; rm .runtimeconfig.json"
+    command = "mkfifo .runtimeconfig.json; echo ${jsonencode(data.external.firebase-function-data.result.runtimeConfig)} > .runtimeconfig.json | zip -FI ${data.archive_file.prepared-source.output_path} .runtimeconfig.json; rm .runtimeconfig.json"
   }
 }
 
@@ -56,6 +59,9 @@ resource "google_storage_bucket" "function-bucket" {
 }
 
 resource "google_storage_bucket_object" "zip" {
+  depends_on = [
+    null_resource.prepared-source-add-runtime
+  ]
   # Append file MD5 to force bucket to be recreated
   name   = "function-source-${data.archive_file.prepared-source.output_md5}.zip"
   bucket = google_storage_bucket.function-bucket.name
