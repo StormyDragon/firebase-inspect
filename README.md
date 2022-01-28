@@ -4,14 +4,15 @@ Firebase Inspector
 Accepts JSON on stdin with the keys:
 * firebase_config: path to the projects firebase.json.
 * alias: name of the alias which to render configuration for.
-* formatting: `flat-json` for terraform compatible output or `json`(default) for just a plain JSON output
+* formatting: `flat-json` for terraform compatible output or `json`(default) for just a plain JSON output.
+* runtime_config: if you maintain your own runtime configs you may supply them here. (fetches runtime configurator variables if not specified)
 
 Outputs a JSON structure
 * projectId: name of the project pointed to by alias.
 * sourceDir: function source files
 * projectDir: root project (where the firebase.json file resides)
 * ignore: list of nodes to ignore when packaging the source.
-* runtimeConfig: the contents of the ".runtimeconfig.json" file which must be added to the archive.
+* runtimeConfig: the contents of the ".runtimeconfig.json" file which must be added to the function archive.
 * triggers: key/values where each value is a [CloudFunction](https://cloud.google.com/functions/docs/reference/rest/v1/projects.locations.functions#CloudFunction) structure. Each key is composed of region and function ID.
 
 You may then generate a plan using Terraform which will deploy all your functions.

@@ -24,8 +24,15 @@ const newSpawn = function (command: string, args?: string[], options?: childProc
 }
 childProcess.spawn = newSpawn as typeof origSpawn
 
+async function getRuntimeConfig(projectId: string, context: unknown): Promise<string | null> {
+    const enabled = await ensureApiEnabled.check(projectId, "runtimeconfig.googleapis.com", "runtimeconfig", true)
+    if (!enabled)
+        return null
+    Object.assign(context, { runtimeConfigEnabled: enabled })
+    return await prepareFunctionsUpload.getFunctionsConfig(context) as string;
+}
 
-async function prepare(context: any, options: any, payload: any) {
+async function prepare(context: any, options: any, payload: any, runtimeConfig?: unknown) {
     const projectId = context.projectId
     const sourceDirName = options.config.get("functions.source");
     if (!sourceDirName) {
@@ -44,14 +51,11 @@ async function prepare(context: any, options: any, payload: any) {
     await runtimeDelegate.validate();
     console.warn(`Building ${runtimeDelegate.name} source`);
     await runtimeDelegate.build();
-    const checkAPIsEnabled = await Promise.all([
-        ensureApiEnabled.ensure(projectId, "cloudfunctions.googleapis.com", "functions"),
-        ensureApiEnabled.check(projectId, "runtimeconfig.googleapis.com", "runtimeconfig", true),
-    ]);
-    context.runtimeConfigEnabled = checkAPIsEnabled[1];
     const firebaseConfig = await functionsConfig.getFirebaseConfig(options);
     context.firebaseConfig = firebaseConfig;
-    const runtimeConfig = await prepareFunctionsUpload.getFunctionsConfig(context);
+    if (!runtimeConfig) {
+        runtimeConfig = await getRuntimeConfig(projectId, context)
+    }
     options.runtimeConfig = runtimeConfig;
     const firebaseEnvs = functionsEnv.loadFirebaseEnvs(firebaseConfig, projectId);
     const userEnvOpt = {
@@ -71,6 +75,7 @@ interface Query {
     firebase_config: string
     alias: string
     formatting?: "flat-json" | "json"
+    runtime_config?: string
 }
 
 const readJsonFromStdin = () => new Promise((resolve: (a: Query) => void) => {
@@ -115,8 +120,8 @@ export async function main() {
 
     await requirePermissions(options, ["cloudconfig.configs.get"])
     await checkServiceAccountIam(options.project)
-    await prepare(context, options, payload)
-
+    const runtimeConfig = typeof query.runtime_config === 'string' ? JSON.parse(query.runtime_config) : query.runtime_config
+    await prepare(context, options, payload, runtimeConfig)
 
     const triggers = Object
         .values(payload.functions.backend.endpoints)
@@ -133,6 +138,7 @@ export async function main() {
 
     const ignore = [...(options.config.src.functions.ignore || ["node_modules", ".git"]), "firebase-debug.log", "firebase-debug.*.log", ".runtimeconfig.json"]
 
+    options.runtimeConfig.firebase = JSON.parse(payload.functions.backend.environmentVariables.FIREBASE_CONFIG)
     switch (query?.formatting) {
         case "flat-json":
             process.stdout.write(JSON.stringify({
