@@ -106,11 +106,9 @@ export async function main() {
     const options: any = {
         nonInteractive: true,
         config: query.firebase_config,
+        project: query.alias,
     }
     await cmd.prepare(options)
-
-    const resolvedProject = options.rc.resolveAlias(query.alias);
-    options.project = resolvedProject
 
     const projectId = utils.needProjectId(options)
     const payload: any = {}
